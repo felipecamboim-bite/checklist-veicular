@@ -1,6 +1,6 @@
 streamlit
-supabase
+supabase>=2.0.0
 postgrest
-realtime-py
+realtime
 gotrue
 setuptools
