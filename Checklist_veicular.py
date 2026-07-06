@@ -54,7 +54,7 @@ def validar_nome(nome): return len(nome.strip().split()) >= 3
 
 def enviar_email(nome, dados):
     email_origem = "automacao.clicklog@gmail.com"
-    senha = st.secrets[SUPABASE]["EMAIL_SENHA"]
+    senha = st.secrets["SUPABASE"]["EMAIL_SENHA"]
     email_destino = "analista@clicklogtransportes.com.br"
     msg = EmailMessage()
     msg['Subject'] = f"Checklist Recebido: {nome}"
