@@ -48,7 +48,7 @@ def set_background_images():
         </style>
     """, unsafe_allow_html=True)
 
-set_background_images()
+# set_background_images()
 
 def validar_nome(nome): return len(nome.strip().split()) >= 3
 
