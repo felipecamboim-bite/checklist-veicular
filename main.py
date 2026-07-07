@@ -89,7 +89,7 @@ def enviar_email(nome, dados):
 def salvar_no_supabase(nome, dados, client):
     dados_banco = {
         "nome_motorista": nome,
-        "data_envio": datetime.now().isoformat(),
+        "data_envio": datetime.now().isoformat(),  # ESSENCIAL
         "veiculo_placa": dados["Veículo (Placa)"],
         "data_ultima_manutencao": dados["Data da ultima manutencao"],
         "extintor_validade": dados["Extintor na validade?"],
