@@ -18,15 +18,24 @@ st.set_page_config(page_title="Checklist Veicular", layout="centered")
 # Injeção de CSS para customizar os campos de entrada (st.selectbox e st.text_input)
 st.markdown("""
     <style>
-    /* Altera o fundo dos campos de entrada (input e selectbox) */
+    /* Força transparência total nos inputs e selectboxes */
     div[data-baseweb="select"] > div, 
-    div[data-baseweb="input"] > input {
-        background-color: #333333 !important; /* Cinza escuro */
-        color: white !important;              /* Texto branco para contraste */
+    div[data-baseweb="input"] > input,
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > div {
+        background-color: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Borda bem sutil */
+        color: white !important;
     }
-    /* Altera o fundo do container do selectbox */
-    div[data-baseweb="select"] {
-        background-color: #333333 !important;
+    
+    /* Remove o fundo branco do dropdown ao clicar */
+    div[role="listbox"] {
+        background-color: #1a1a1a !important; /* Fundo do menu suspenso um pouco escuro */
+    }
+    
+    /* Ajuste para o texto interno */
+    input, select {
+        color: white !important;
     }
     </style>
 """, unsafe_allow_html=True)
