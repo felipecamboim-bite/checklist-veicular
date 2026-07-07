@@ -15,6 +15,22 @@ senha = st.secrets["SUPABASE"]["EMAIL_SENHA"]
 
 st.set_page_config(page_title="Checklist Veicular", layout="centered")
 
+# Injeção de CSS para customizar os campos de entrada (st.selectbox e st.text_input)
+st.markdown("""
+    <style>
+    /* Altera o fundo dos campos de entrada (input e selectbox) */
+    div[data-baseweb="select"] > div, 
+    div[data-baseweb="input"] > input {
+        background-color: #333333 !important; /* Cinza escuro */
+        color: white !important;              /* Texto branco para contraste */
+    }
+    /* Altera o fundo do container do selectbox */
+    div[data-baseweb="select"] {
+        background-color: #333333 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- ESTILO ---
 st.markdown("""
     <style>
