@@ -94,7 +94,7 @@ def set_background_images():
 # Lembre-se de remover o # para chamar a função abaixo
 set_background_images()
 
-def validar_nome(nome): return len(nome.strip().split()) >= 3
+def validar_nome(nome): return len(nome.strip().split()) >= 2
 
 def enviar_email(nome, dados):
     email_origem = "automacao.clicklog@gmail.com"
