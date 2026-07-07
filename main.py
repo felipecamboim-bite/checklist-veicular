@@ -129,7 +129,7 @@ def salvar_no_supabase(nome, dados, observacoes, client):
         "freios_ok": dados["Freios ok?"],
         "nivel_oleo": dados["Nivel oleo motor ok?"],
         "parabrisa_ok": dados["Parabrisa ok?"],
-        "chave_triangulo_macaco": dados["Chave/Triângulo/Macaco?"]
+        "chave_triangulo_macaco": dados["Chave/Triângulo/Macaco?"],
         "observacoes": observacoes
     }
     response = client.table("inspecoes").insert(dados_banco).execute()
