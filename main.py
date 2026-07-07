@@ -111,7 +111,7 @@ def enviar_email(nome, dados):
         smtp.login(email_origem, senha)
         smtp.send_message(msg)
 
-def salvar_no_supabase(nome, dados, client):
+def salvar_no_supabase(nome, dados, observacoes, client):
     dados_banco = {
         "nome_motorista": nome,
         "data_envio": datetime.now().isoformat(),  # ESSENCIAL
@@ -130,6 +130,7 @@ def salvar_no_supabase(nome, dados, client):
         "nivel_oleo": dados["Nivel oleo motor ok?"],
         "parabrisa_ok": dados["Parabrisa ok?"],
         "chave_triangulo_macaco": dados["Chave/Triângulo/Macaco?"]
+        "observacoes": observacoes
     }
     response = client.table("inspecoes").insert(dados_banco).execute()
     return response
@@ -165,6 +166,8 @@ elif st.session_state.etapa == 'checklist':
             for q in ["Freios ok?", "Nivel oleo motor ok?", "Parabrisa ok?", "Chave/Triângulo/Macaco?"]:
                 respostas[q] = st.selectbox(q, ["Conforme", "Não conforme"], index=None, placeholder="Selecione...", key=f"c3_{q}")
             respostas["Data da ultima manutencao"] = st.text_input("Data da última manutenção:", placeholder="DD/MM/AAAA", key="data_input")
+
+            observacoes = st.text_area("Observações:", placeholder="Digite aqui alguma observação se necessário...", key="obs_input")
             
         if st.form_submit_button("Finalizar Checklist"):
             if any(r is None for q, r in respostas.items() if "Data" not in q and "Placa" not in q):
@@ -175,7 +178,7 @@ elif st.session_state.etapa == 'checklist':
                 st.warning("⚠️ Atenção: Preencha a placa.")
             else:
                 try:
-                    salvar_no_supabase(st.session_state.nome_completo, respostas, supabase)
+                    salvar_no_supabase(st.session_state.nome_completo, respostas, observacoes, supabase)
                     enviar_email(st.session_state.nome_completo, respostas)
                     st.success("Checklist enviado e salvo com sucesso!")
                 except Exception as e:
