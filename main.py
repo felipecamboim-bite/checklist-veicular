@@ -4,6 +4,7 @@ from email.message import EmailMessage
 import base64
 import os
 import re
+from datetime import datetime
 from supabase import create_client
 
 # --- CONFIGURAÇÃO SUPABASE ---
@@ -88,6 +89,7 @@ def enviar_email(nome, dados):
 def salvar_no_supabase(nome, dados, client):
     dados_banco = {
         "nome_motorista": nome,
+        "data_envio": datetime.now().isoformat(),
         "veiculo_placa": dados["Veículo (Placa)"],
         "data_ultima_manutencao": dados["Data da ultima manutencao"],
         "extintor_validade": dados["Extintor na validade?"],
@@ -104,7 +106,8 @@ def salvar_no_supabase(nome, dados, client):
         "parabrisa_ok": dados["Parabrisa ok?"],
         "chave_triangulo_macaco": dados["Chave/Triângulo/Macaco?"]
     }
-    client.table("inspecoes").insert(dados_banco).execute()
+    response = client.table("inspecoes").insert(dados_banco).execute()
+    return response
 
 # --- LÓGICA DO APP ---
 if 'etapa' not in st.session_state: st.session_state.etapa = 'nome'
