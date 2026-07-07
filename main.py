@@ -32,23 +32,41 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def set_background_images():
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    pasta_imagens = os.path.join(base_path, 'imagens')
-    arquivos = {f.lower(): f for f in os.listdir(pasta_imagens)}
-    d_file, t_file, m_file = arquivos.get('desktop.png'), arquivos.get('tablet.png'), arquivos.get('mobile.png')
-    if not all([d_file, t_file, m_file]): return
-    desktop_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, d_file))
-    tablet_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, t_file))
-    mobile_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, m_file))
-    st.markdown(f"""
-        <style>
-        .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{desktop_bg}"); background-size: cover; background-position: center; }}
-        @media (max-width: 1024px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{tablet_bg}"); }} }}
-        @media (max-width: 600px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{mobile_bg}"); }} }}
-        </style>
-    """, unsafe_allow_html=True)
+    try:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        pasta_imagens = os.path.join(base_path, 'imagens')
+        
+        # DEBUG: Isso vai mostrar na tela se a pasta existe
+        if not os.path.exists(pasta_imagens):
+            st.error(f"Pasta 'imagens' não encontrada em: {pasta_imagens}")
+            return
 
-# set_background_images()
+        arquivos = {f.lower(): f for f in os.listdir(pasta_imagens)}
+        
+        # DEBUG: Verifica se os arquivos necessários existem
+        arquivos_esperados = ['desktop.png', 'tablet.png', 'mobile.png']
+        for arq in arquivos_esperados:
+            if arq not in arquivos:
+                st.error(f"Arquivo não encontrado: {arq}")
+                return
+
+        desktop_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['desktop.png']))
+        tablet_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['tablet.png']))
+        mobile_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['mobile.png']))
+        
+        st.markdown(f"""
+            <style>
+            .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{desktop_bg}"); background-size: cover; background-position: center; }}
+            @media (max-width: 1024px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{tablet_bg}"); }} }}
+            @media (max-width: 600px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{mobile_bg}"); }} }}
+            </style>
+        """, unsafe_allow_html=True)
+        
+    except Exception as e:
+        st.error(f"Erro ao carregar imagens: {e}")
+
+# Lembre-se de remover o # para chamar a função abaixo
+set_background_images()
 
 def validar_nome(nome): return len(nome.strip().split()) >= 3
 
