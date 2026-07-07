@@ -39,7 +39,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
+            
 # --- ESTILO ---
 st.markdown("""
     <style>
@@ -180,3 +180,4 @@ elif st.session_state.etapa == 'checklist':
                     st.success("Checklist enviado e salvo com sucesso!")
                 except Exception as e:
                     st.error(f"Erro no envio: {e}")
+                    
