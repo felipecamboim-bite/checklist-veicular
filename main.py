@@ -6,95 +6,126 @@ import os
 import re
 from datetime import datetime
 from supabase import create_client
+import pandas as pd
 
 # --- CONFIGURAÇÃO SUPABASE ---
 supabase_url = st.secrets["SUPABASE"]["URL"]
 supabase_key = st.secrets["SUPABASE"]["KEY"]
 supabase = create_client(supabase_url, supabase_key)
-senha = st.secrets["SUPABASE"]["EMAIL_SENHA"]
 
-st.set_page_config(page_title="Checklist Veicular", layout="centered")
+st.set_page_config(page_title="Checklist Veicular", layout="centered", initial_sidebar_state="collapsed")
 
-# Injeção de CSS para customizar os campos de entrada (st.selectbox e st.text_input)
+# --- CSS ---
 st.markdown("""
     <style>
     /* Força transparência total nos inputs e selectboxes */
-    div[data-baseweb="select"] > div, 
+    div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > input,
     .stTextInput > div > div > input,
     .stSelectbox > div > div > div {
         background-color: transparent !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Borda bem sutil */
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         color: white !important;
     }
-    
-    /* Remove o fundo branco do dropdown ao clicar */
-    div[role="listbox"] {
-        background-color: #1a1a1a !important; /* Fundo do menu suspenso um pouco escuro */
+
+    [data-testid="stSidebar"] section > div > div > div > div > div {
+        display: none;
     }
-    
-    /* Ajuste para o texto interno */
+
+    div[role="listbox"] {
+        background-color: #1a1a1a !important;
+    }
+
     input, select {
         color: white !important;
     }
-    </style>
-""", unsafe_allow_html=True)
-            
-# --- ESTILO ---
-st.markdown("""
-    <style>
+
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');
     .stApp { background-color: rgba(0, 0, 0, 0.6) !important; background-blend-mode: darken; }
     h1 { font-family: 'Oswald', sans-serif !important; font-weight: 500 !important; font-size: 36px !important; color: #ffffff !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; margin-bottom: 20px !important; }
     div[data-baseweb="select"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea { background-color: #2b2b2b !important; color: #ffffff !important; border: 1px solid #444444 !important; font-family: 'Oswald', sans-serif !important; }
     label, p, span, div { color: #ffffff !important; font-family: 'Oswald', sans-serif !important; }
     div[role="listbox"] { background-color: #2b2b2b !important; color: #ffffff !important; }
+
+    /* Corrige o ícone de recolher a sidebar (evita mostrar o nome do ícone como texto) */
+    [data-testid="stIconMaterial"] {
+        font-family: 'Material Symbols Rounded' !important;
+    }
+
+    /* Reduz a largura da barra lateral */
+    section[data-testid="stSidebar"] {
+        width: 260px !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        width: 260px !important;
+    }
+
+    /* Impede que o texto dos botões quebre linha */
+    .stButton button, [data-testid="stFormSubmitButton"] button {
+        white-space: nowrap !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
+
+# --- IMAGENS DE FUNDO (com cache para não recarregar a cada rerun) ---
+@st.cache_data(show_spinner=False)
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
+
+@st.cache_data(show_spinner=False)
+def carregar_backgrounds():
+    """Lê e codifica as imagens de fundo uma única vez (cacheado)."""
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    pasta_imagens = os.path.join(base_path, 'imagens')
+
+    if not os.path.exists(pasta_imagens):
+        return None, f"Pasta 'imagens' não encontrada em: {pasta_imagens}"
+
+    arquivos = {f.lower(): f for f in os.listdir(pasta_imagens)}
+    arquivos_esperados = ['desktop.png', 'tablet.png', 'mobile.png']
+    for arq in arquivos_esperados:
+        if arq not in arquivos:
+            return None, f"Arquivo não encontrado: {arq}"
+
+    desktop_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['desktop.png']))
+    tablet_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['tablet.png']))
+    mobile_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['mobile.png']))
+    return (desktop_bg, tablet_bg, mobile_bg), None
+
+
 def set_background_images():
-    try:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        pasta_imagens = os.path.join(base_path, 'imagens')
-        
-        # DEBUG: Isso vai mostrar na tela se a pasta existe
-        if not os.path.exists(pasta_imagens):
-            st.error(f"Pasta 'imagens' não encontrada em: {pasta_imagens}")
-            return
+    imagens, erro = carregar_backgrounds()
+    if erro:
+        st.error(erro)
+        return
+    desktop_bg, tablet_bg, mobile_bg = imagens
+    st.markdown(f"""
+        <style>
+        .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{desktop_bg}"); background-size: cover; background-position: center; }}
+        @media (max-width: 1024px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{tablet_bg}"); }} }}
+        @media (max-width: 600px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{mobile_bg}"); }} }}
+        </style>
+    """, unsafe_allow_html=True)
 
-        arquivos = {f.lower(): f for f in os.listdir(pasta_imagens)}
-        
-        # DEBUG: Verifica se os arquivos necessários existem
-        arquivos_esperados = ['desktop.png', 'tablet.png', 'mobile.png']
-        for arq in arquivos_esperados:
-            if arq not in arquivos:
-                st.error(f"Arquivo não encontrado: {arq}")
-                return
 
-        desktop_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['desktop.png']))
-        tablet_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['tablet.png']))
-        mobile_bg = get_base64_of_bin_file(os.path.join(pasta_imagens, arquivos['mobile.png']))
-        
-        st.markdown(f"""
-            <style>
-            .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{desktop_bg}"); background-size: cover; background-position: center; }}
-            @media (max-width: 1024px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{tablet_bg}"); }} }}
-            @media (max-width: 600px) {{ .stApp {{ background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("data:image/png;base64,{mobile_bg}"); }} }}
-            </style>
-        """, unsafe_allow_html=True)
-        
-    except Exception as e:
-        st.error(f"Erro ao carregar imagens: {e}")
-
-# Lembre-se de remover o # para chamar a função abaixo
 set_background_images()
 
-def validar_nome(nome): return len(nome.strip().split()) >= 2
+
+# --- FUNÇÕES AUXILIARES ---
+def validar_nome(nome):
+    return len(nome.strip().split()) >= 2
+
+
+def validar_placa(placa):
+    placa = placa.strip().upper()
+    padrao_antigo = r"^[A-Z]{3}-?\d{4}$"
+    padrao_mercosul = r"^[A-Z]{3}\d[A-Z]\d{2}$"
+    return bool(re.match(padrao_antigo, placa) or re.match(padrao_mercosul, placa))
+
 
 def enviar_email(nome, dados):
     email_origem = "automacao.clicklog@gmail.com"
@@ -105,18 +136,21 @@ def enviar_email(nome, dados):
     msg['From'] = email_origem
     msg['To'] = email_destino
     corpo = f"Motorista: {nome}\n\nRespostas:\n"
-    for p, r in dados.items(): corpo += f"{p}: {r}\n"
+    for p, r in dados.items():
+        corpo += f"{p}: {r}\n"
     msg.set_content(corpo)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(email_origem, senha)
         smtp.send_message(msg)
 
+
 def salvar_no_supabase(nome, dados, observacoes, client):
+    data_manutencao_iso = datetime.strptime(dados["Data da ultima manutencao"], "%d/%m/%Y").strftime("%Y-%m-%d")
     dados_banco = {
         "nome_motorista": nome,
-        "data_envio": datetime.now().isoformat(),  # ESSENCIAL
+        "data_envio": datetime.now().isoformat(),
         "veiculo_placa": dados["Veículo (Placa)"],
-        "data_ultima_manutencao": dados["Data da ultima manutencao"],
+        "data_ultima_manutencao": data_manutencao_iso,
         "extintor_validade": dados["Extintor na validade?"],
         "bau_avarias": dados["Bau sem avarias?"],
         "pneus_bons": dados["Pneus bons?"],
@@ -130,25 +164,68 @@ def salvar_no_supabase(nome, dados, observacoes, client):
         "nivel_oleo": dados["Nivel oleo motor ok?"],
         "parabrisa_ok": dados["Parabrisa ok?"],
         "chave_triangulo_macaco": dados["Chave/Triângulo/Macaco?"],
-        "observacoes": observacoes
+        "observacoes": observacoes,
     }
     response = client.table("inspecoes").insert(dados_banco).execute()
     return response
 
-# --- LÓGICA DO APP ---
-if 'etapa' not in st.session_state: st.session_state.etapa = 'nome'
-if 'nome_completo' not in st.session_state: st.session_state.nome_completo = ""
 
+def validar_admin(usuario, senha):
+    """
+    Credenciais lidas do secrets.toml, NUNCA hardcoded no código.
+    Formato esperado em .streamlit/secrets.toml:
+
+    [ADMIN_CREDENTIALS]
+    "Adm@kewin" = "sua_senha_aqui"
+    "Adm@felipe" = "outra_senha_aqui"
+    """
+    admins = st.secrets.get("ADMIN_CREDENTIALS", {})
+    return admins.get(usuario) == senha
+
+
+# --- ESTADO DA SESSÃO ---
+if 'etapa' not in st.session_state:
+    st.session_state.etapa = 'nome'
+if 'nome_completo' not in st.session_state:
+    st.session_state.nome_completo = ""
+if 'mostrar_admin' not in st.session_state:
+    st.session_state.mostrar_admin = False
+if 'cadastros_temporarios' not in st.session_state:
+    st.session_state.cadastros_temporarios = []
+
+
+# --- MENU LATERAL (LOGIN ADMIN) ---
+if st.button("☰ Menu", key="botao_menu"):
+    st.session_state.mostrar_admin = not st.session_state.mostrar_admin
+    st.rerun()
+
+if st.session_state.mostrar_admin:
+    with st.sidebar:
+        st.write("### Login Administrador")
+        user = st.text_input("Login", key="admin_login")
+        password = st.text_input("Senha", type="password", key="admin_senha")
+        if st.button("Entrar", key="admin_entrar"):
+            if validar_admin(user, password):
+                st.session_state.etapa = 'admin_painel'
+                st.session_state.mostrar_admin = False
+                st.rerun()
+            else:
+                st.error("Credenciais inválidas")
+
+
+# --- TELA 1: NOME DO MOTORISTA ---
 if st.session_state.etapa == 'nome':
     st.title("Seja bem-vindo à página de Checklist do seu veículo.")
-    nome = st.text_input("Preencha seu nome completo:")
-    if st.button("Avançar"):
+    nome = st.text_input("Preencha seu nome completo:", key="nome_input")
+    if st.button("Avançar", key="avancar_nome"):
         if validar_nome(nome):
             st.session_state.nome_completo = nome
             st.session_state.etapa = 'checklist'
             st.rerun()
-        else: st.error("Nome incompleto! Digite nome e sobrenome.")
+        else:
+            st.error("Nome incompleto! Digite nome e sobrenome.")
 
+# --- TELA 2: CHECKLIST ---
 elif st.session_state.etapa == 'checklist':
     st.title("Checklist de Inspeção")
     st.write(f"Motorista: **{st.session_state.nome_completo}**")
@@ -161,14 +238,14 @@ elif st.session_state.etapa == 'checklist':
         with c2:
             for q in ["Nível arrefecimento?", "Suspensao ok?", "Sinalizacao ok?", "Carrinho 2 rodas?"]:
                 respostas[q] = st.selectbox(q, ["Conforme", "Não conforme"], index=None, placeholder="Selecione...", key=f"c2_{q}")
-            respostas["Veículo (Placa)"] = st.text_input("Veículo (Placa):", placeholder="ABC-1234")
+            respostas["Veículo (Placa)"] = st.text_input("Veículo (Placa):", placeholder="ABC-1234", key="placa_input")
         with c3:
             for q in ["Freios ok?", "Nivel oleo motor ok?", "Parabrisa ok?", "Chave/Triângulo/Macaco?"]:
                 respostas[q] = st.selectbox(q, ["Conforme", "Não conforme"], index=None, placeholder="Selecione...", key=f"c3_{q}")
             respostas["Data da ultima manutencao"] = st.text_input("Data da última manutenção:", placeholder="DD/MM/AAAA", key="data_input")
 
             observacoes = st.text_area("Observações:", placeholder="Digite aqui alguma observação se necessário...", key="obs_input")
-            
+
         if st.form_submit_button("Finalizar Checklist"):
             if any(r is None for q, r in respostas.items() if "Data" not in q and "Placa" not in q):
                 st.warning("⚠️ Atenção: Por favor, responda todos os itens.")
@@ -176,6 +253,8 @@ elif st.session_state.etapa == 'checklist':
                 st.error("⚠️ Data inválida! Use DD/MM/AAAA.")
             elif not respostas["Veículo (Placa)"].strip():
                 st.warning("⚠️ Atenção: Preencha a placa.")
+            elif not validar_placa(respostas["Veículo (Placa)"]):
+                st.error("⚠️ Placa inválida! Use o formato ABC1234 ou ABC1D23.")
             else:
                 try:
                     salvar_no_supabase(st.session_state.nome_completo, respostas, observacoes, supabase)
@@ -183,4 +262,55 @@ elif st.session_state.etapa == 'checklist':
                     st.success("Checklist enviado e salvo com sucesso!")
                 except Exception as e:
                     st.error(f"Erro no envio: {e}")
-                    
+
+    if st.button("Voltar ao Início", key="voltar_checklist"):
+        st.session_state.etapa = 'nome'
+        st.rerun()
+
+# --- TELA 3: PAINEL ADMINISTRATIVO ---
+elif st.session_state.etapa == 'admin_painel':
+    st.title("⚙️ Painel Administrativo")
+
+    st.subheader("Cadastrar Motorista")
+    st.caption("Preencha os campos e clique em Enviar. Por enquanto os cadastros ficam só nesta sessão (ainda não são gravados no banco de dados).")
+
+    with st.form("form_cadastro_linha", clear_on_submit=True):
+        col1, col2, col3, col4, col5, col_botao = st.columns([2, 1.1, 1.1, 1.2, 1.2, 1])
+        with col1:
+            novo_nome = st.text_input("Motorista")
+        with col2:
+            nova_placa = st.text_input("Placa")
+        with col3:
+            novo_chassi = st.text_input("Chassi")
+        with col4:
+            nova_validade_cnh = st.text_input("Val. CNH", placeholder="DD/MM/AAAA")
+        with col5:
+            nova_validade_renavam = st.text_input("Val. Renavam", placeholder="DD/MM/AAAA")
+        with col_botao:
+            st.write("")
+            st.write("")
+            enviado = st.form_submit_button("Enviar")
+
+        if enviado:
+            if not novo_nome.strip() or not nova_placa.strip():
+                st.warning("⚠️ Preencha ao menos Motorista e Placa.")
+            else:
+                st.session_state.cadastros_temporarios.append({
+                    "Motorista": novo_nome,
+                    "Placa": nova_placa,
+                    "Chassi": novo_chassi,
+                    "Validade CNH": nova_validade_cnh,
+                    "Validade Renavam": nova_validade_renavam,
+                })
+
+    st.divider()
+    st.subheader("Cadastros desta sessão")
+    if st.session_state.cadastros_temporarios:
+        df_temp = pd.DataFrame(st.session_state.cadastros_temporarios)
+        st.dataframe(df_temp, use_container_width=True)
+    else:
+        st.info("Nenhum cadastro adicionado ainda nesta sessão.")
+
+    if st.button("Voltar ao Início", key="voltar_admin"):
+        st.session_state.etapa = 'nome'
+        st.rerun()
