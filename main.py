@@ -43,34 +43,67 @@ st.markdown("""
             
     }
     
-    /* Força transparência total nos inputs e selectboxes */
+    /* 2. Força TRANSPARÊNCIA TOTAL nos campos de entrada (Inputs, Selects e Textareas) */
     div[data-baseweb="select"] > div,
-    div[data-baseweb="input"] > input,
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="input"] input,
     .stTextInput > div > div > input,
-    .stSelectbox > div > div > div {
+    .stSelectbox > div > div > div,
+    .stTextArea > div > div > textarea {
         background-color: transparent !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        color: white !important;
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        color: #ffffff !important;
+            
     }
-
+            
+    /* 3. Força TRANSPARÊNCIA TOTAL em TODOS OS BOTÕES (Menu, Avançar, Sidebar, Form, etc.) */
+    .stButton button, 
+    [data-testid="stFormSubmitButton"] button,
+    button[kind="secondary"],
+    button[kind="primary"] {
+        background-color: transparent !important;
+        background: transparent !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 8px !important;
+        white-space: nowrap !important;
+    
+    }
+            
+    /* Efeito sutil ao passar o mouse por cima dos botões */
+    .stButton button:hover, 
+    [data-testid="stFormSubmitButton"] button:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: #ffffff !important;
+        color: #ffffff !important;
+    
+    }
+    
+    /* 4. Estilização do Menu Dropdown (Lista de opções quando abre um Selectbox) */
+    div[role="listbox"],
+    ul[data-testid="stSelectboxVirtualDropdown"] {
+        background-color: #1a1a1a !important;
+        color: #ffffff !important;
+            
+    }
+    
+    /* Oculta elementos visuais padrão da sidebar se necessário */
     [data-testid="stSidebar"] section > div > div > div > div > div {
         display: none;
-    }
 
-    div[role="listbox"] {
-        background-color: #1a1a1a !important;
     }
+    
+    input, select, textarea {
+    color: #ffffff !important;
 
-    input, select {
-        color: white !important;
     }
 
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');
     .stApp { background-color: rgba(0, 0, 0, 0.6) !important; background-blend-mode: darken; }
     h1 { font-family: 'Oswald', sans-serif !important; font-weight: 500 !important; font-size: 36px !important; color: #ffffff !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; margin-bottom: 20px !important; }
-    div[data-baseweb="select"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea { background-color: #2b2b2b !important; color: #ffffff !important; border: 1px solid #444444 !important; font-family: 'Oswald', sans-serif !important; }
+    div[data-baseweb="select"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea {color: #ffffff !important; border: 1px solid #444444 !important; font-family: 'Oswald', sans-serif !important; }
     label, p, span, div { color: #ffffff !important; font-family: 'Oswald', sans-serif !important; }
-    div[role="listbox"] { background-color: #2b2b2b !important; color: #ffffff !important; }
 
     /* Corrige o ícone de recolher a sidebar (evita mostrar o nome do ícone como texto) */
     [data-testid="stIconMaterial"] {
