@@ -18,6 +18,31 @@ st.set_page_config(page_title="Checklist Veicular", layout="centered", initial_s
 # --- CSS ---
 st.markdown("""
     <style>
+    /* 1. Barra do topo transparente e reposicionamento da setinha (>>) */
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+        z-index: 1 !important;
+    }
+
+    button[data-testid="stSidebarCollapseButton"] {
+        position: fixed !important;
+        top: 70px !important;       /* Regule a altura aqui */
+        left: 25px !important;      /* Regule a distância da esquerda aqui */
+        z-index: 999999 !important; /* Fica por cima de qualquer elemento */
+        background-color: rgba(14, 17, 23, 0.8) !important; /* Fundo escuro sutil */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        padding: 4px 8px !important;
+            
+    }
+
+    button[data-testid="stSidebarCollapseButton"]:hover {
+        background-color: #ff4b4b !important;
+        border-color: #ff4b4b !important;        
+            
+    }
+    
     /* Força transparência total nos inputs e selectboxes */
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > input,
