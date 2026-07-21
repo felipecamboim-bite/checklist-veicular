@@ -330,7 +330,6 @@ elif st.session_state.etapa == 'admin_painel':
     st.title("⚙️ Painel Administrativo")
 
     st.subheader("Cadastrar Motorista")
-    st.caption("Preencha os campos e clique em Enviar. Por enquanto os cadastros ficam só nesta sessão (ainda não são gravados no banco de dados).")
 
     with st.form("form_cadastro_linha", clear_on_submit=True):
         col1, col2, col3, col4, col5, col_botao = st.columns([2, 1.1, 1.1, 1.2, 1.2, 1])
@@ -353,21 +352,39 @@ elif st.session_state.etapa == 'admin_painel':
             if not novo_nome.strip() or not nova_placa.strip():
                 st.warning("⚠️ Preencha ao menos Motorista e Placa.")
             else:
-                st.session_state.cadastros_temporarios.append({
-                    "Motorista": novo_nome,
-                    "Placa": nova_placa,
-                    "Chassi": novo_chassi,
-                    "Validade CNH": nova_validade_cnh,
-                    "Validade Renavam": nova_validade_renavam,
-                })
+                try:
+                    dados = {
+                        "Motorista": novo_nome.strip(),
+                        "Placa": nova_placa.strip(),
+                        "Chassi": novo_chassi.strip(),
+                        "Val. CNH": nova_validade_cnh.strip(),
+                        "Val. Renavam": nova_validade_renavam.strip()
+                    }
+                    
+                    supabase.table("Motoristas").insert(dados).execute()
+                    st.success("✅ Motorista cadastrado com sucesso no banco de dados!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erro ao salvar no banco de dados: {e}")
 
     st.divider()
-    st.subheader("Cadastros desta sessão")
-    if st.session_state.cadastros_temporarios:
-        df_temp = pd.DataFrame(st.session_state.cadastros_temporarios)
-        st.dataframe(df_temp, use_container_width=True)
-    else:
-        st.info("Nenhum cadastro adicionado ainda nesta sessão.")
+    st.subheader("Motoristas Cadastrados")
+
+    try:
+        res = supabase.table("Motoristas").select('id, "Motorista", "Placa", "Chassi", "Val. CNH", "Val. Renavam"').order("id", desc=True).execute()
+        dados_banco = res.data
+
+        if dados_banco:
+            df_banco = pd.DataFrame(dados_banco)
+            
+            if "id" in df_banco.columns:
+                df_banco = df_banco.drop(columns=["id"])
+
+            st.dataframe(df_banco, use_container_width=True, hide_index=True)
+        else:
+            st.info("Nenhum motorista cadastrado no banco de dados ainda.")
+    except Exception as e:
+        st.error(f"Erro ao carregar motoristas do banco: {e}")
 
     if st.button("Voltar ao Início", key="voltar_admin"):
         st.session_state.etapa = 'nome'
