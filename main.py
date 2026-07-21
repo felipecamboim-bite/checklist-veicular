@@ -15,13 +15,13 @@ supabase = create_client(supabase_url, supabase_key)
 
 st.set_page_config(page_title="Checklist Veicular", layout="centered", initial_sidebar_state="collapsed")
 
-# --- CSS ---
-# --- CSS LIMPO E OTIMIZADO ---
+# --- CSS LIMPO E DEFINITIVO ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');    
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
-    /* 1. BARRA DO TOPO E BOTÃO DE RECOLHER/EXPANDIR SIDEBAR */
+    /* 1. BARRA DO TOPO E BOTÃO DE EXPANDIR SIDEBAR */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
         z-index: 1 !important;
@@ -29,8 +29,8 @@ st.markdown("""
 
     button[data-testid="stSidebarCollapseButton"] {
         position: fixed !important;
-        top: 70px !important;       /* Altura do botão */
-        left: 25px !important;      /* Posição da esquerda */
+        top: 70px !important;
+        left: 25px !important;
         z-index: 999999 !important;
         background-color: rgba(14, 17, 23, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -44,27 +44,36 @@ st.markdown("""
         border-color: #ff4b4b !important;
     }
 
-    /* Corrige o ícone da sidebar (evita mostrar nome do ícone em texto) */
-    [data-testid="stIconMaterial"] {
-        font-family: 'Material Symbols Rounded' !important;
-    }
-
-    /* 2. SIDEBAR (MENU LATERAL) - LARGURA, FUNDO ESCURO E TEXTOS BRANCOS */
+    /* 2. ESTRUTURA DA SIDEBAR (MENU LATERAL) */
     section[data-testid="stSidebar"],
     section[data-testid="stSidebar"] > div {
         width: 260px !important;
-        background-color: rgba(15, 15, 15, 0.95) !important; /* Fundo escuro sutil */
+        background-color: rgba(15, 15, 15, 0.95) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 
-    /* Força cor branca para TUDO no Menu/Sidebar */
-    section[data-testid="stSidebar"] *,
+    /* Oculta divs vazias/decorativas padrão do Streamlit */
+    [data-testid="stSidebar"] section > div > div > div > div > div {
+        display: none;
+    }
+
+    /* Ajuste de Legibilidade do Título na Sidebar */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h3 {
+        font-family: 'Oswald', sans-serif !important;
+        font-size: 20px !important;
+        font-weight: 500 !important;
+        letter-spacing: 1.5px !important;
+        color: #ffffff !important;
+        line-height: 1.3 !important;
+        margin-bottom: 15px !important;
+        text-transform: uppercase !important;
+    }
+
+    /* Textos gerais da Sidebar (sem afetar ícones) */
     section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span {
+    section[data-testid="stSidebar"] p {
         color: #ffffff !important;
         font-family: 'Oswald', sans-serif !important;
     }
@@ -77,30 +86,20 @@ st.markdown("""
         border-radius: 6px !important;
     }
 
-    /* Oculta elementos visuais padrão extras da sidebar se necessário */
-    [data-testid="stSidebar"] section > div > div > div > div > div {
-        display: none;
-    }
-
-    /* 3. TRANSPARÊNCIA TOTAL NOS CAMPOS DE ENTRADA (Inputs, Selects e Textareas) */
+    /* 3. TRANSPARÊNCIA NOS CAMPOS DE ENTRADA (Inputs, Selects, Textareas) */
     div[data-baseweb="select"],
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"],
     div[data-baseweb="input"] > div,
-    div[data-baseweb="input"] input,
     .stTextInput > div,
-    .stTextInput > div > div,
-    .stTextInput > div > div > input,
-    .stSelectbox > div > div > div,
-    .stTextArea > div > div > textarea {
+    .stTextInput > div > div {
         background-color: transparent !important;
         background: transparent !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         color: #ffffff !important;
-        font-family: 'Oswald', sans-serif !important;
     }
 
-    /* 4. TRANSPARÊNCIA EM TODOS OS BOTÕES */
+    /* 4. BOTÕES DA APLICAÇÃO */
     .stButton button, 
     [data-testid="stFormSubmitButton"] button,
     button[kind="secondary"],
@@ -111,6 +110,7 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-radius: 8px !important;
         white-space: nowrap !important;
+        font-family: 'Oswald', sans-serif !important;
     }
 
     .stButton button:hover, 
@@ -120,14 +120,14 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 5. MENU DROPDOWN DA SELECTBOX */
+    /* 5. DROPDOWN (SELECTBOX) */
     div[role="listbox"],
     ul[data-testid="stSelectboxVirtualDropdown"] {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
     }
 
-    /* 6. ESTILOS GLOBAIS DE FONTE E APLICAÇÃO */
+    /* 6. ESTILOS GLOBAIS DA APLICAÇÃO */
     .stApp { 
         background-color: rgba(0, 0, 0, 0.6) !important; 
         background-blend-mode: darken; 
@@ -136,20 +136,35 @@ st.markdown("""
     h1 { 
         font-family: 'Oswald', sans-serif !important; 
         font-weight: 500 !important; 
-        font-size: 36px !important; 
+        font-size: 32px !important; 
         color: #ffffff !important; 
         text-transform: uppercase !important; 
         letter-spacing: 0.5px !important; 
         margin-bottom: 20px !important; 
     }
 
-    label, p, span, div, input, select, textarea { 
+    label, p { 
         color: #ffffff !important; 
         font-family: 'Oswald', sans-serif !important; 
     }
+
+    /* 7. BLINDAGEM DE ÍCONES (DECLARADO POR ÚLTIMO PARA SOBRESCREVER TUDO) */
+    [data-testid="stIconMaterial"],
+    [data-testid="stInputAriaLive"] + button *,
+    button[aria-label*="password"] *,
+    button[aria-label*="senha"] *,
+    button[aria-label*="visibility"] *,
+    button[data-aria-label*="senha"] *,
+    span[data-aria-hidden="true"],
+    i {
+        font-family: 'Material Symbols Rounded', 'Material Icons' !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
-
 
 # --- IMAGENS DE FUNDO (com cache para não recarregar a cada rerun) ---
 @st.cache_data(show_spinner=False)
