@@ -92,13 +92,21 @@ st.markdown("""
     div[data-baseweb="input"],
     div[data-baseweb="input"] > div,
     .stTextInput > div,
-    .stTextInput > div > div {
+    .stTextInput > div > div,
+    .stSelectbox > div > div {
         background-color: transparent !important;
         background: transparent !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         color: #ffffff !important;
     }
 
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] div,
+    .stSelectbox div {
+        color: #ffffff !important;
+        font-family: 'Oswald', sans-serif !important;
+    }
+    
     /* 4. BOTÕES DA APLICAÇÃO */
     .stButton button, 
     [data-testid="stFormSubmitButton"] button,
@@ -120,11 +128,43 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 5. DROPDOWN (SELECTBOX) */
+   /* 5. DROPDOWN (SELECTBOX E OPÇÕES) */
     div[role="listbox"],
-    ul[data-testid="stSelectboxVirtualDropdown"] {
-        background-color: #1a1a1a !important;
+    ul[data-testid="stSelectboxVirtualDropdown"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="menu"] {
+        background-color: #1a1a1a !important; /* Fundo bem escuro */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+    }
+
+    /* Força o texto das opções ("Conforme", "Não conforme") a ficar BRANCO */
+    li[role="option"],
+    div[role="option"],
+    li[role="option"] *,
+    div[role="option"] *,
+    div[data-baseweb="menu"] * {
+        background-color: transparent !important;
         color: #ffffff !important;
+        fill: #ffffff !important;
+        font-family: 'Oswald', sans-serif !important;
+        font-size: 15px !important;
+        opacity: 1 !important;
+    }
+
+    /* Destaque cinza claro ao passar o mouse por cima da opção */
+    li[role="option"]:hover,
+    div[role="option"]:hover,
+    li[aria-selected="true"],
+    div[aria-selected="true"] {
+        background-color: #333333 !important;
+    }
+
+    li[role="option"]:hover *,
+    div[role="option"]:hover * {
+        color: #ffffff !important;
+    
     }
 
     /* 6. ESTILOS GLOBAIS DA APLICAÇÃO */
