@@ -201,6 +201,18 @@ def enviar_email(nome, dados):
         smtp.login(email_origem, senha)
         smtp.send_message(msg)
 
+def formatar_data_para_banco(data_texto):
+    if not data_texto or not data_texto.strip():
+        return None
+    try:
+        data_limpa = data_texto.strip()
+        if len(data_limpa.split('/')[-1]) == 2:
+            dt = datetime.strptime(data_limpa, "%d/%m/%y")
+        else:
+            dt = datetime.strptime(data_limpa, "%d/%m/%Y")
+        return dt.strftime("%Y-%m-%d")
+    except ValueError:
+        return None
 
 def salvar_no_supabase(nome, dados, observacoes, client):
     data_manutencao_iso = datetime.strptime(dados["Data da ultima manutencao"], "%d/%m/%Y").strftime("%Y-%m-%d")
@@ -357,8 +369,8 @@ elif st.session_state.etapa == 'admin_painel':
                         "Motorista": novo_nome.strip(),
                         "Placa": nova_placa.strip(),
                         "Chassi": novo_chassi.strip(),
-                        "Val. CNH": nova_validade_cnh.strip(),
-                        "Val. Renavam": nova_validade_renavam.strip()
+                        "Val. CNH": formatar_data_para_banco(nova_validade_cnh),
+                        "Val. Renavam": formatar_data_para_banco(nova_validade_renavam)
                     }
                     
                     supabase.table("Motoristas").insert(dados).execute()
