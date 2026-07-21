@@ -86,26 +86,39 @@ st.markdown("""
         border-radius: 6px !important;
     }
 
-    /* 3. TRANSPARÊNCIA NOS CAMPOS DE ENTRADA (Inputs, Selects, Textareas) */
+    /* 3. TRANSPARÊNCIA NOS CAMPOS DE ENTRADA E COR DOS TEXTOS FECHADOS */
     div[data-baseweb="select"],
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"],
     div[data-baseweb="input"] > div,
     .stTextInput > div,
     .stTextInput > div > div,
-    .stSelectbox > div > div {
-        background-color: transparent !important;
-        background: transparent !important;
+    .stSelectbox > div > div,
+    .stDateInput > div > div {
+        background-color: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
-        color: #ffffff !important;
+        border-radius: 6px !important;
     }
 
-    div[data-baseweb="select"] span,
-    div[data-baseweb="select"] div,
-    .stSelectbox div {
+    /* Força cor BRANCA acesa para o texto selecionado ("Não conforme"), digitado e ícones internos */
+    div[data-baseweb="select"] *,
+    div[data-baseweb="input"] *,
+    .stSelectbox *,
+    .stTextInput input,
+    .stDateInput input {
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important; /* Corrige a cor em alguns navegadores que forçam cinza */
         font-family: 'Oswald', sans-serif !important;
+        opacity: 1 !important; /* Remove o tom apagado/transparente */
     }
+
+    /* Cor do texto do "Selecione..." e datas padrão (Placeholders) */
+    ::placeholder,
+    div[data-baseweb="select"] [data-aria-hidden="false"] {
+        color: rgba(255, 255, 255, 0.7) !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
+        opacity: 1 !important;
+    }    
     
     /* 4. BOTÕES DA APLICAÇÃO */
     .stButton button, 
@@ -524,4 +537,3 @@ elif st.session_state.etapa == 'admin_painel':
     if st.button("Voltar ao Início", key="voltar_admin"):
         st.session_state.etapa = 'nome'
         st.rerun()
-        
