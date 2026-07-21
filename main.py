@@ -524,3 +524,4 @@ elif st.session_state.etapa == 'admin_painel':
     if st.button("Voltar ao Início", key="voltar_admin"):
         st.session_state.etapa = 'nome'
         st.rerun()
+        
