@@ -389,10 +389,53 @@ elif st.session_state.etapa == 'admin_painel':
         if dados_banco:
             df_banco = pd.DataFrame(dados_banco)
             
-            if "id" in df_banco.columns:
-                df_banco = df_banco.drop(columns=["id"])
+            df_exibicao = df_banco.copy()
+            if "id" in df_exibicao.columns:
+                df_exibicao = df_exibicao.drop(columns=["id"])
 
-            st.dataframe(df_banco, use_container_width=True, hide_index=True)
+            # Formata as datas para o padrão brasileiro na exibição
+            if "Val. CNH" in df_exibicao.columns:
+                df_exibicao["Val. CNH"] = pd.to_datetime(df_exibicao["Val. CNH"], errors='coerce').dt.strftime('%d/%m/%Y')
+            if "Val. Renavam" in df_exibicao.columns:
+                df_exibicao["Val. Renavam"] = pd.to_datetime(df_exibicao["Val. Renavam"], errors='coerce').dt.strftime('%d/%m/%Y')
+
+            # Preenche valores nulos para não quebrar o layout
+            df_exibicao = df_exibicao.fillna("-")
+
+            # Exibe a tabela normal (somente leitura)
+            st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
+
+            st.write("")
+            st.markdown("##### 🗑️ Excluir Cadastro")
+
+            # 2. Mapeia 'Nome (Placa: XXX)' para o ID correspondente do banco
+            opcoes_excluir = {
+                f"{row['Motorista']} (Placa: {row['Placa']})": row['id'] 
+                for _, row in df_banco.iterrows()
+            }
+
+            col_select, col_btn = st.columns([3, 1])
+
+            with col_select:
+                motorista_selecionado = st.selectbox(
+                    "Selecione o motorista para remover:", 
+                    options=["-- Selecione para excluir --"] + list(opcoes_excluir.keys()),
+                    label_visibility="collapsed"
+                )
+
+            with col_btn:
+                if st.button("Excluir Motorista", type="primary", use_container_width=True):
+                    if motorista_selecionado != "-- Selecione para excluir --":
+                        id_para_deletar = opcoes_excluir[motorista_selecionado]
+                        try:
+                            supabase.table("Motoristas").delete().eq("id", id_para_deletar).execute()
+                            st.success("🗑️ Motorista excluído com sucesso!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Erro ao excluir no banco: {e}")
+                    else:
+                        st.warning("⚠️ Escolha um motorista na lista antes de clicar em excluir.")
+
         else:
             st.info("Nenhum motorista cadastrado no banco de dados ainda.")
     except Exception as e:
