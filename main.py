@@ -16,9 +16,12 @@ supabase = create_client(supabase_url, supabase_key)
 st.set_page_config(page_title="Checklist Veicular", layout="centered", initial_sidebar_state="collapsed")
 
 # --- CSS ---
+# --- CSS LIMPO E OTIMIZADO ---
 st.markdown("""
     <style>
-    /* 1. Barra do topo transparente e reposicionamento da setinha (>>) */
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');    
+
+    /* 1. BARRA DO TOPO E BOTÃO DE RECOLHER/EXPANDIR SIDEBAR */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
         z-index: 1 !important;
@@ -26,27 +29,67 @@ st.markdown("""
 
     button[data-testid="stSidebarCollapseButton"] {
         position: fixed !important;
-        top: 70px !important;       /* Regule a altura aqui */
-        left: 25px !important;      /* Regule a distância da esquerda aqui */
-        z-index: 999999 !important; /* Fica por cima de qualquer elemento */
-        background-color: rgba(14, 17, 23, 0.8) !important; /* Fundo escuro sutil */
+        top: 70px !important;       /* Altura do botão */
+        left: 25px !important;      /* Posição da esquerda */
+        z-index: 999999 !important;
+        background-color: rgba(14, 17, 23, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         border-radius: 8px !important;
         color: #ffffff !important;
         padding: 4px 8px !important;
-            
     }
 
     button[data-testid="stSidebarCollapseButton"]:hover {
         background-color: #ff4b4b !important;
-        border-color: #ff4b4b !important;        
-            
+        border-color: #ff4b4b !important;
     }
-    
-    /* 2. Força TRANSPARÊNCIA TOTAL nos campos de entrada (Inputs, Selects e Textareas) */
+
+    /* Corrige o ícone da sidebar (evita mostrar nome do ícone em texto) */
+    [data-testid="stIconMaterial"] {
+        font-family: 'Material Symbols Rounded' !important;
+    }
+
+    /* 2. SIDEBAR (MENU LATERAL) - LARGURA, FUNDO ESCURO E TEXTOS BRANCOS */
+    section[data-testid="stSidebar"],
+    section[data-testid="stSidebar"] > div {
+        width: 260px !important;
+        background-color: rgba(15, 15, 15, 0.95) !important; /* Fundo escuro sutil */
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Força cor branca para TUDO no Menu/Sidebar */
+    section[data-testid="stSidebar"] *,
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span {
+        color: #ffffff !important;
+        font-family: 'Oswald', sans-serif !important;
+    }
+
+    /* Inputs internos da Sidebar (Login e Senha) */
+    section[data-testid="stSidebar"] input {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 6px !important;
+    }
+
+    /* Oculta elementos visuais padrão extras da sidebar se necessário */
+    [data-testid="stSidebar"] section > div > div > div > div > div {
+        display: none;
+    }
+
+    /* 3. TRANSPARÊNCIA TOTAL NOS CAMPOS DE ENTRADA (Inputs, Selects e Textareas) */
+    div[data-baseweb="select"],
     div[data-baseweb="select"] > div,
+    div[data-baseweb="input"],
     div[data-baseweb="input"] > div,
     div[data-baseweb="input"] input,
+    .stTextInput > div,
+    .stTextInput > div > div,
     .stTextInput > div > div > input,
     .stSelectbox > div > div > div,
     .stTextArea > div > div > textarea {
@@ -54,10 +97,10 @@ st.markdown("""
         background: transparent !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         color: #ffffff !important;
-            
+        font-family: 'Oswald', sans-serif !important;
     }
-            
-    /* 3. Força TRANSPARÊNCIA TOTAL em TODOS OS BOTÕES (Menu, Avançar, Sidebar, Form, etc.) */
+
+    /* 4. TRANSPARÊNCIA EM TODOS OS BOTÕES */
     .stButton button, 
     [data-testid="stFormSubmitButton"] button,
     button[kind="secondary"],
@@ -68,59 +111,41 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-radius: 8px !important;
         white-space: nowrap !important;
-    
     }
-            
-    /* Efeito sutil ao passar o mouse por cima dos botões */
+
     .stButton button:hover, 
     [data-testid="stFormSubmitButton"] button:hover {
         background-color: rgba(255, 255, 255, 0.1) !important;
         border-color: #ffffff !important;
         color: #ffffff !important;
-    
     }
-    
-    /* 4. Estilização do Menu Dropdown (Lista de opções quando abre um Selectbox) */
+
+    /* 5. MENU DROPDOWN DA SELECTBOX */
     div[role="listbox"],
     ul[data-testid="stSelectboxVirtualDropdown"] {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
-            
-    }
-    
-    /* Oculta elementos visuais padrão da sidebar se necessário */
-    [data-testid="stSidebar"] section > div > div > div > div > div {
-        display: none;
-
-    }
-    
-    input, select, textarea {
-    color: #ffffff !important;
-
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&display=swap');
-    .stApp { background-color: rgba(0, 0, 0, 0.6) !important; background-blend-mode: darken; }
-    h1 { font-family: 'Oswald', sans-serif !important; font-weight: 500 !important; font-size: 36px !important; color: #ffffff !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; margin-bottom: 20px !important; }
-    div[data-baseweb="select"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea {color: #ffffff !important; border: 1px solid #444444 !important; font-family: 'Oswald', sans-serif !important; }
-    label, p, span, div { color: #ffffff !important; font-family: 'Oswald', sans-serif !important; }
-
-    /* Corrige o ícone de recolher a sidebar (evita mostrar o nome do ícone como texto) */
-    [data-testid="stIconMaterial"] {
-        font-family: 'Material Symbols Rounded' !important;
+    /* 6. ESTILOS GLOBAIS DE FONTE E APLICAÇÃO */
+    .stApp { 
+        background-color: rgba(0, 0, 0, 0.6) !important; 
+        background-blend-mode: darken; 
     }
 
-    /* Reduz a largura da barra lateral */
-    section[data-testid="stSidebar"] {
-        width: 260px !important;
-    }
-    section[data-testid="stSidebar"] > div {
-        width: 260px !important;
+    h1 { 
+        font-family: 'Oswald', sans-serif !important; 
+        font-weight: 500 !important; 
+        font-size: 36px !important; 
+        color: #ffffff !important; 
+        text-transform: uppercase !important; 
+        letter-spacing: 0.5px !important; 
+        margin-bottom: 20px !important; 
     }
 
-    /* Impede que o texto dos botões quebre linha */
-    .stButton button, [data-testid="stFormSubmitButton"] button {
-        white-space: nowrap !important;
+    label, p, span, div, input, select, textarea { 
+        color: #ffffff !important; 
+        font-family: 'Oswald', sans-serif !important; 
     }
     </style>
 """, unsafe_allow_html=True)
